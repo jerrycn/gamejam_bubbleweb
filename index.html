@@ -1,9 +1,25 @@
+<!--
+ * 游戏入口HTML文件
+ * 
+ * 功能：
+ * - 加载Phaser框架
+ * - 加载游戏脚本
+ * - 提供游戏容器
+ * 
+ * 依赖：
+ * - Phaser 3.55.2
+ * - 游戏相关脚本文件
+ * - CSS样式
+ -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <title>猫咪泡泡游戏</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="objects/Bubble.js"></script>
+    <script src="objects/LightBubble.js"></script>
+    <script src="scenes/UIScene.js"></script>
     <style>
         body {
             margin: 0;
@@ -16,6 +32,7 @@
     </style>
 </head>
 <body>
+    <div id="game"></div>
     <script src="game.js"></script>
 </body>
 </html> 

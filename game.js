@@ -1,3 +1,20 @@
+/**
+ * 游戏主文件
+ * 
+ * 功能：
+ * - 初始化游戏配置
+ * - 加载游戏资源
+ * - 创建游戏场景
+ * - 管理游戏状态
+ * - 处理用户输入
+ * 
+ * 主要组件：
+ * - 猫咪角色
+ * - 泡泡系统
+ * - 状态机
+ * - 场景管理
+ */
+
 // 定义状态机的状态
 const CatState = {
     IDLE: 'idle',
@@ -16,19 +33,22 @@ const config = {
             debug: false
         }
     },
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    }
+    scene: [
+        {
+            key: 'GameScene',
+            preload: preload,
+            create: create,
+            update: update
+        },
+        UIScene
+    ]
 };
 
 let game = new Phaser.Game(config);
 let cat;
-let bubble;
-let blowBubble;
+let currentBubble; // 当前的泡泡实例
 let currentState = CatState.IDLE;
-let bubbleTimer;
+let currentLightBubble; // 当前的光泡泡实例
 
 function preload() {
     this.load.image('background', 'assets/background.jpeg');
@@ -47,6 +67,9 @@ function preload() {
     
     // 加载泡泡纹理
     this.load.image('bubble', 'assets/bubble.png');
+    
+    // 加载光泡泡纹理
+    this.load.image('bubblelight', 'assets/bubblelight.png');
 }
 
 function create() {
@@ -72,17 +95,23 @@ function create() {
     
     // 默认就开始播放动画
     cat.play('walk');
+    cat.setDepth(2);
     
-    // 创建思考泡泡
-    bubble = this.add.image(0, 0, 'bubble');
-    bubble.setVisible(false);
-    bubble.setScale(0.3); // 调整初始大小
+    // 创建泡泡实例
+    currentBubble = new Bubble(this, 0, 0);
     
-    // 创建吹气泡泡
-    blowBubble = this.add.image(0, 0, 'bubble');
-    blowBubble.setVisible(false);
-    blowBubble.setScale(0.1); // 设置初始大小
 
+    /*
+    // 创建光泡泡实例并放在场景中间
+    currentLightBubble = new LightBubble(
+        this, 
+        this.game.config.width / 2,  // x 坐标：屏幕中心
+        this.game.config.height / 2,  // y 坐标：屏幕中心
+        100  // 增大半径到100像素，使其更容易看到
+    );
+    currentLightBubble.setVisible(true);
+    currentLightBubble.setDepth(1); // 确保在猫咪和其他元素之上
+*/
     // 添加键盘控制
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasdKeys = this.input.keyboard.addKeys({
@@ -92,52 +121,21 @@ function create() {
         right: Phaser.Input.Keyboard.KeyCodes.D
     });
 
-    // 绑定所有状态相关的函数到场景
+    // 修改状态相关的函数
     this.showThinkBubble = () => {
-        if (bubbleTimer) clearTimeout(bubbleTimer);
-        bubbleTimer = setTimeout(() => {
-            bubble.setVisible(true);
-            // 将思考泡泡放在猫咪正上方
-            bubble.setPosition(cat.x, cat.y - cat.height * 0.3);
-            this.tweens.add({
-                targets: bubble,
-                scale: { from: 0.1, to: 0.3 },
-                alpha: { from: 0.2, to: 1 },
-                duration: 1000,
-                ease: 'Power1'
-            });
-        }, 500);
+        // 空函数，不再显示思考泡泡
     };
 
     this.hideThinkBubble = () => {
-        if (bubbleTimer) clearTimeout(bubbleTimer);
-        bubble.setVisible(false);
+        // 空函数，不再需要隐藏思考泡泡
     };
 
     this.startBlowingBubble = () => {
-        blowBubble.setVisible(true);
-        blowBubble.setScale(0.1); // 重置为初始大小
-        
-        // 将吹气泡泡放在猫咪中心点
-        blowBubble.setPosition(cat.x, cat.y);
-        
-        // 持续放大的动画
-        this.tweens.add({
-            targets: blowBubble,
-            scale: 2, // 最大放大倍数
-            alpha: { from: 1, to: 0.5 },
-            duration: 3000,
-            ease: 'Linear',
-            repeat: -1,
-            onComplete: function() {
-                blowBubble.setScale(0.1);
-            }
-        });
+        currentBubble.startGrowing(cat.x, cat.y);
     };
 
     this.stopBlowingBubble = () => {
-        blowBubble.setVisible(false);
-        this.tweens.killTweensOf(blowBubble);
+        currentBubble.stopGrowing();
     };
 
     // 状态机
@@ -154,7 +152,7 @@ function create() {
                     this.hideThinkBubble();
                     break;
                 case CatState.BLOWING:
-                    this.stopBlowingBubble();
+                    this.stopBlowingBubble();  // 停止泡泡动画
                     break;
             }
             
@@ -176,13 +174,19 @@ function create() {
         }
     };
 
-    // 鼠标事件监听
+    // 修改鼠标事件监听
     this.input.on('pointerdown', () => {
-        this.stateMachine.change(CatState.BLOWING);
+        // 只有在UI场景未暂停时才允许产生新泡泡
+        if (!this.scene.isPaused('GameScene')) {
+            this.stateMachine.change(CatState.BLOWING);
+        }
     });
 
     this.input.on('pointerup', () => {
-        this.stateMachine.change(CatState.IDLE);
+        // 只有在UI场景未暂停时才改变状态
+        if (!this.scene.isPaused('GameScene')) {
+            this.stateMachine.change(CatState.IDLE);
+        }
     });
 
     // 设置初始状态
@@ -200,6 +204,9 @@ function create() {
         frameRate: 12,
         repeat: -1
     });
+
+    // 启动UI场景
+    this.scene.launch('UIScene');
 }
 
 function update() {
