@@ -23,6 +23,18 @@ class Bubble {
         // 泡泡状态
         this.state = Bubble.State.HIDDEN;
         this.currentTween = null;
+        // 添加碰撞检测所需的属性
+        this.radius = 0;  // 当前半径
+        
+        // 创建特效精灵（初始隐藏）
+        this.effectSprite = scene.add.sprite(x, y, 'bubble_effect_0');
+        this.effectSprite.setVisible(false);
+        this.effectSprite.setDepth(101); // 确保特效显示在泡泡上层
+        
+        // 监听特效动画完成事件
+        this.effectSprite.on('animationcomplete', () => {
+            this.effectSprite.setVisible(false);
+        });
     }
 
     // 泡泡的状态枚举
@@ -38,6 +50,7 @@ class Bubble {
         this.sprite.setVisible(true);
         this.sprite.setScale(0.1);
         this.state = Bubble.State.GROWING;
+        this.radius = this.sprite.displayWidth / 2;
 
         this.currentTween = this.scene.tweens.add({
             targets: this.sprite,
@@ -45,6 +58,10 @@ class Bubble {
             alpha: { from: 1, to: 0.7 },
             duration: 3000,
             ease: 'Linear',
+            onUpdate: () => {
+                // 更新当前半径
+                this.radius = this.sprite.displayWidth / 2;
+            },
             onComplete: () => {
                 this.state = Bubble.State.FLOATING;
             }
@@ -56,18 +73,12 @@ class Bubble {
         if (this.currentTween) {
             this.currentTween.stop();
             this.currentTween = null;
-            
-            // 获取当前泡泡的位置和大小
-            const x = this.sprite.x;
-            const y = this.sprite.y;
-            const radius = this.sprite.displayWidth / 2; // 获取实际显示大小的半径
-            
-            // 创建光效泡泡
-            const lightBubble = new LightBubble(this.scene, x, y, radius);
-            lightBubble.setVisible(true);
-            lightBubble.setDepth(1); // 确保在适当的层级
         }
         this.state = Bubble.State.FLOATING;
+        this.sprite.setAlpha(0.7);
+        
+        // 播放特效动画
+        this.playEffect();
     }
 
     // 隐藏泡泡
@@ -83,5 +94,45 @@ class Bubble {
     // 获取当前状态
     getState() {
         return this.state;
+    }
+
+    // 销毁泡泡
+    destroy() {
+        if (this.currentTween) {
+            this.currentTween.stop();
+        }
+        this.sprite.destroy();
+        this.effectSprite.destroy();
+    }
+
+    // 检查是否与其他泡泡碰撞
+    checkCollision(otherBubble) {
+        if (this.state !== Bubble.State.GROWING) return false;
+        
+        const dx = this.sprite.x - otherBubble.sprite.x;
+        const dy = this.sprite.y - otherBubble.sprite.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // 如果两个泡泡的半径之和大于它们中心点之间的距离，则发生碰撞
+        return distance < (this.radius + otherBubble.radius);
+    }
+
+    // 获取当前半径
+    getRadius() {
+        return this.radius;
+    }
+
+    // 播放特效动画
+    playEffect() {
+        this.effectSprite.setPosition(this.sprite.x, this.sprite.y);
+        this.effectSprite.setScale(this.sprite.scale);
+        this.effectSprite.setVisible(true);
+        this.effectSprite.play('bubble_effect');
+    }
+
+    // 修改 setPosition 方法，同时更新特效位置
+    setPosition(x, y) {
+        this.sprite.setPosition(x, y);
+        this.effectSprite.setPosition(x, y);
     }
 } 

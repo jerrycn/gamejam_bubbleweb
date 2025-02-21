@@ -80,8 +80,23 @@ class UIScene extends Phaser.Scene {
             this.hidePauseMenu();
         });
 
+        // 添加音乐控制按钮
+        const musicButton = this.add.text(0, 50, '音乐: 开', {
+            fontSize: '32px',
+            fill: '#ffffff',
+            backgroundColor: '#444444',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5);
+        
+        musicButton.setInteractive();
+        musicButton.on('pointerdown', () => {
+            const gameScene = this.scene.get('GameScene');
+            gameScene.toggleMusic();
+            musicButton.setText(gameScene.bgMusic.isPlaying ? '音乐: 开' : '音乐: 关');
+        });
+
         // 将所有元素添加到容器中
-        this.pausePanel.add([panelBg, versionInfo, resumeButton]);
+        this.pausePanel.add([panelBg, versionInfo, resumeButton, musicButton]);
         
         // 初始隐藏暂停菜单
         this.pauseBackground.setVisible(false);
@@ -100,5 +115,10 @@ class UIScene extends Phaser.Scene {
         this.pausePanel.setVisible(false);
         // 恢复主游戏场景
         this.scene.resume('GameScene');
+        // 恢复音乐
+        const gameScene = this.scene.get('GameScene');
+        if (!gameScene.bgMusic.isPlaying) {
+            gameScene.bgMusic.resume();
+        }
     }
 } 
