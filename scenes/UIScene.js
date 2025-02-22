@@ -91,8 +91,8 @@ class UIScene extends Phaser.Scene {
         musicButton.setInteractive();
         musicButton.on('pointerdown', () => {
             const gameScene = this.scene.get('GameScene');
-            gameScene.toggleMusic();
-            musicButton.setText(gameScene.bgMusic.isPlaying ? '音乐: 开' : '音乐: 关');
+            const isPlaying = gameScene.audioManager.toggleMusic();
+            musicButton.setText(isPlaying ? '音乐: 开' : '音乐: 关');
         });
 
         // 将所有元素添加到容器中
@@ -117,8 +117,6 @@ class UIScene extends Phaser.Scene {
         this.scene.resume('GameScene');
         // 恢复音乐
         const gameScene = this.scene.get('GameScene');
-        if (!gameScene.bgMusic.isPlaying) {
-            gameScene.bgMusic.resume();
-        }
+        gameScene.audioManager.resumeMusic();
     }
 } 

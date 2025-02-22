@@ -20,11 +20,22 @@ class Bubble {
         this.sprite.setVisible(false);
         this.sprite.setScale(0.1);
         this.sprite.setDepth(100);
+        
+        // 添加音效
+        this.blowingSound = scene.sound.add('bubble_blowing', {
+            volume: 0.4,
+            loop: true
+        });
+        
+        this.blowingEndSound = scene.sound.add('bubble_blowing_end', {
+            volume: 0.4,
+            loop: false
+        });
+
         // 泡泡状态
         this.state = Bubble.State.HIDDEN;
         this.currentTween = null;
-        // 添加碰撞检测所需的属性
-        this.radius = 0;  // 当前半径
+        this.radius = 0;
         
         // 创建特效精灵（初始隐藏）
         this.effectSprite = scene.add.sprite(x, y, 'bubble_effect_0');
@@ -52,6 +63,11 @@ class Bubble {
         this.state = Bubble.State.GROWING;
         this.radius = this.sprite.displayWidth / 2;
 
+        // 播放放大音效
+        if (!this.blowingSound.isPlaying) {
+            this.blowingSound.play();
+        }
+
         this.currentTween = this.scene.tweens.add({
             targets: this.sprite,
             scale: 2,
@@ -59,11 +75,11 @@ class Bubble {
             duration: 3000,
             ease: 'Linear',
             onUpdate: () => {
-                // 更新当前半径
                 this.radius = this.sprite.displayWidth / 2;
             },
             onComplete: () => {
                 this.state = Bubble.State.FLOATING;
+                this.stopGrowing();
             }
         });
     }
@@ -74,6 +90,11 @@ class Bubble {
             this.currentTween.stop();
             this.currentTween = null;
         }
+        
+        // 停止放大音效并播放结束音效
+        this.blowingSound.stop();
+        this.blowingEndSound.play();
+        
         this.state = Bubble.State.FLOATING;
         this.sprite.setAlpha(0.7);
         
@@ -101,6 +122,11 @@ class Bubble {
         if (this.currentTween) {
             this.currentTween.stop();
         }
+        // 停止并销毁音效
+        this.blowingSound.stop();
+        this.blowingSound.destroy();
+        this.blowingEndSound.destroy();
+        
         this.sprite.destroy();
         this.effectSprite.destroy();
     }
