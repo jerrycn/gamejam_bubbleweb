@@ -97,8 +97,15 @@ function update() {
             if (enemy && enemy.update) {
                 enemy.update();
                 
+
+                if (enemy.checkBubbleCollision(bubbles)) {
+                    console.log('Enemy in bubble!');
+                }
+                
                 // 检查与猫咪的碰撞
-                if (enemy.checkCollision && enemy.checkCollision(cat)) {
+                if (!enemy.checkBubbleCollision(bubbles) &&  // 只有不在泡泡中才检查与猫的碰撞
+                    enemy.checkCollision && 
+                    enemy.checkCollision(cat)) {
                     // 处理碰撞逻辑
                     console.log('Enemy hit cat!');
                 }
