@@ -19,6 +19,9 @@ class LightEnemy extends Enemy {
         // 添加缓动效果
         this.acceleration = 0.1;
         this.maxSpeed = 3;
+
+        
+        this.init();
     }
 
     createSprite(x, y) {
@@ -42,6 +45,11 @@ class LightEnemy extends Enemy {
             });
         }
         
+    
+    }
+
+    // 播放空闲动画
+    playIdleAnimation(){
         // 播放动画
         this.sprite.play('lightEnemy_move');
     }
@@ -49,6 +57,9 @@ class LightEnemy extends Enemy {
     update() {
         if (!this.isActive) return;
 
+        super.update();
+
+/*
         // 获取猫咪位置（从猫咪的sprite获取）
         const catPos = cat.getPosition();  // 使用 cat.getPosition()
         const dx = catPos.x - this.sprite.x;
@@ -71,6 +82,7 @@ class LightEnemy extends Enemy {
 
         // 检查边界碰撞
         this.checkBoundaryCollision();
+        */
     }
 
     checkBoundaryCollision() {

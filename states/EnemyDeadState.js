@@ -3,8 +3,8 @@
  */
 class EnemyDeadState extends EnemyState {
     enter() {
-        // 播放死亡动画
-        this.enemy.sprite.play('dead');
+        // 使用基类的动画方法
+        this.enemy.playDeadAnimation();
         
         // 设置定时器在动画播放完后销毁敌人
         this.enemy.scene.time.delayedCall(1000, () => {
