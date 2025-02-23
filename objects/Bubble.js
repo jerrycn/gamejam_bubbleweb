@@ -36,16 +36,22 @@ class Bubble {
         this.state = Bubble.State.HIDDEN;
         this.currentTween = null;
         this.radius = 0;
-        
-        // 创建特效精灵（初始隐藏）
-        this.effectSprite = scene.add.sprite(x, y, 'bubble_effect_0');
-        this.effectSprite.setVisible(false);
-        this.effectSprite.setDepth(101); // 确保特效显示在泡泡上层
-        
-        // 监听特效动画完成事件
-        this.effectSprite.on('animationcomplete', () => {
-            this.effectSprite.setVisible(false);
-        });
+
+        // 创建泡泡特效动画
+        if (!scene.anims.exists('bubble_effect')) {
+            const effectFrames = [];
+            for (let i = 0; i <= 5; i++) {
+                effectFrames.push({ key: `bubble_effect_${i}` });
+            }
+            
+            scene.anims.create({
+                key: 'bubble_effect',
+                frames: effectFrames,
+                frameRate: 12,
+                repeat: 0,  // 只播放一次
+                hideOnComplete: true  // 播放完成后自动隐藏
+            });
+        }
     }
 
     // 泡泡的状态枚举
@@ -128,7 +134,6 @@ class Bubble {
         this.blowingEndSound.destroy();
         
         this.sprite.destroy();
-        this.effectSprite.destroy();
     }
 
     // 检查是否与其他泡泡碰撞
@@ -150,15 +155,41 @@ class Bubble {
 
     // 播放特效动画
     playEffect() {
-        this.effectSprite.setPosition(this.sprite.x, this.sprite.y);
-        this.effectSprite.setScale(this.sprite.scale);
-        this.effectSprite.setVisible(true);
-        this.effectSprite.play('bubble_effect');
+        console.log("---playEffect start");
+        
+        // 每次播放时创建新的特效精灵
+        const effectSprite = this.scene.add.sprite(this.sprite.x, this.sprite.y, 'bubble_effect_0');
+        effectSprite.setScale(this.sprite.scale);
+        effectSprite.setDepth(101);
+        
+        // 检查动画是否存在
+        const anim = this.scene.anims.get('bubble_effect');
+        console.log("Animation exists:", !!anim);
+        
+        // 播放动画并在完成后销毁
+        effectSprite.play('bubble_effect');
+        
+        // 添加更多事件监听以便调试
+        effectSprite.on('animationstart', () => {
+            console.log("---Animation started");
+        });
+        
+        effectSprite.on('animationupdate', () => {
+            console.log("---Animation frame updated");
+        });
+        
+        effectSprite.on('animationcomplete', () => {
+            console.log("---Animation completed");
+            effectSprite.destroy();
+        });
+        
+        effectSprite.on('destroy', () => {
+            console.log("---Sprite destroyed");
+        });
     }
 
-    // 修改 setPosition 方法，同时更新特效位置
+    // 修改 setPosition 方法，移除特效位置更新
     setPosition(x, y) {
         this.sprite.setPosition(x, y);
-        this.effectSprite.setPosition(x, y);
     }
 } 

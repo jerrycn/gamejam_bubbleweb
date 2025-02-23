@@ -24,24 +24,25 @@ class InputManager {
             right: Phaser.Input.Keyboard.KeyCodes.D
         });
 
-        // 初始化鼠标事件
-        this.initMouseEvents();
-    }
+        // 创建鼠标输入控制
+        this.mouseKeys = {
+            down: false,
+            x: 0,
+            y: 0
+        };
 
-    // 初始化鼠标事件监听
-    initMouseEvents() {
-        this.scene.input.on('pointerdown', () => {
-            if (!this.scene.scene.isPaused('GameScene') && !cat.isInBubble(bubbles)) {
-                cat.setState(Cat.State.BLOWING);
-                this.scene.startBlowingBubble();
-            }
+        // 添加鼠标事件监听
+        scene.input.on('pointerdown', () => {
+            this.mouseKeys.down = true;
         });
 
-        this.scene.input.on('pointerup', () => {
-            if (!this.scene.scene.isPaused('GameScene')) {
-                cat.setState(Cat.State.IDLE);
-                this.scene.stopBlowingBubble();
-            }
+        scene.input.on('pointerup', () => {
+            this.mouseKeys.down = false;
+        });
+
+        scene.input.on('pointermove', (pointer) => {
+            this.mouseKeys.x = pointer.x;
+            this.mouseKeys.y = pointer.y;
         });
     }
 
@@ -53,5 +54,10 @@ class InputManager {
     // 获取WASD键
     getWASDKeys() {
         return this.wasdKeys;
+    }
+
+    // 获取鼠标输入
+    getMouseKeys() {
+        return this.mouseKeys;
     }
 } 

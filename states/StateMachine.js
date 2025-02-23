@@ -17,14 +17,19 @@ class StateMachine {
         if (this.currentState) {
             this.currentState.exit();
         }
+        
         this.currentState = newState;
-        this.currentState.enter();
+        
+        if (this.currentState) {
+            this.currentState.enter();
+        }
     }
 
     // 更新当前状态
-    update() {
+    update(input) {
         if (this.currentState) {
-            this.currentState.update();
+            // 确保传递 input 参数给当前状态的 update 方法
+            this.currentState.update(input);
         }
     }
 

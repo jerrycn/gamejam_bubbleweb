@@ -6,10 +6,23 @@ class CatIdleState extends CatState {
         this.cat.sprite.play('walk');
     }
 
-    update() {
-        // 检查是否需要切换到其他状态
-        if (this.cat.isMoving()) {
+    update(input) {
+        const { cursors, wasdKeys, mouseKeys } = input;
+        
+        // 检查移动输入
+        const isMoving = cursors.left.isDown || wasdKeys.left.isDown ||
+            cursors.right.isDown || wasdKeys.right.isDown ||
+            cursors.up.isDown || wasdKeys.up.isDown ||
+            cursors.down.isDown || wasdKeys.down.isDown;
+
+        if (isMoving) {
             this.cat.stateMachine.changeState(new CatWalkingState(this.cat));
+            return;
+        }
+        
+        // 检查吹泡泡输入
+        if (mouseKeys.down && !this.cat.isInBubble(this.cat.bubbles)) {
+            this.cat.stateMachine.changeState(new CatBlowingState(this.cat));
         }
     }
 } 

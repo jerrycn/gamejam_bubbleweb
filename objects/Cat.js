@@ -14,6 +14,16 @@
  * @class Cat
  */
 class Cat {
+    // 添加静态常量
+    static MAX_BUBBLES = 20;  // 最大泡泡数量
+
+    // 已有的静态状态枚举
+    static State = {
+        IDLE: 'idle',
+        WALKING: 'walking',
+        BLOWING: 'blowing'
+    };
+
     constructor(scene, x, y) {
         this.scene = scene;
         this.sprite = scene.add.sprite(x, y, 'cat_walk_0');
@@ -36,12 +46,6 @@ class Cat {
         this.bubbles = bubbles;  // 引用全局泡泡数组
         this.lightBubbles = lightBubbles;  // 引用全局光效泡泡数组
     }
-
-    static State = {
-        IDLE: 'idle',
-        WALKING: 'walking',
-        BLOWING: 'blowing'
-    };
 
     createAnimations() {
         // 创建行走动画
@@ -71,44 +75,16 @@ class Cat {
         });
     }
 
-    update(cursors, wasdKeys) {
-        // 更新移动输入
-        this.updateMovement(cursors, wasdKeys);
+    update(cursors, wasdKeys, mouseKeys) {
+        // 将所有输入参数作为对象传入状态机
+        const input = {
+            cursors,
+            wasdKeys,
+            mouseKeys
+        };
+        this.stateMachine.update(input);
+
         
-        // 更新状态机
-        this.stateMachine.update();
-    }
-
-    updateMovement(cursors, wasdKeys) {
-        if (this.stateMachine.getCurrentState() instanceof CatBlowingState) {
-            return;
-        }
-
-        const speed = 2;
-        this.moving = false;
-
-        if (cursors.left.isDown || wasdKeys.left.isDown) {
-            this.sprite.x -= speed;
-            this.sprite.setFlipX(false);
-            this.moving = true;
-        }
-        if (cursors.right.isDown || wasdKeys.right.isDown) {
-            this.sprite.x += speed;
-            this.sprite.setFlipX(true);
-            this.moving = true;
-        }
-        if (cursors.up.isDown || wasdKeys.up.isDown) {
-            this.sprite.y -= speed;
-            this.moving = true;
-        }
-        if (cursors.down.isDown || wasdKeys.down.isDown) {
-            this.sprite.y += speed;
-            this.moving = true;
-        }
-    }
-
-    isMoving() {
-        return this.moving;
     }
 
     getPosition() {
@@ -139,7 +115,6 @@ class Cat {
 
     // 开始吹泡泡
     startBlowingBubble() {
-        const MAX_BUBBLES = 20;  // 最大泡泡数量
         const position = this.getPosition();
         
         // 创建新泡泡
@@ -147,7 +122,7 @@ class Cat {
         this.currentBubble.startGrowing(position.x, position.y);
         
         // 如果超过最大数量，移除最早的泡泡
-        if (this.bubbles.length >= MAX_BUBBLES) {
+        if (this.bubbles.length >= Cat.MAX_BUBBLES) {  // 使用类的静态常量
             const oldBubble = this.bubbles.shift();
             oldBubble.destroy();
             if (this.lightBubbles.length > 0) {
@@ -174,13 +149,30 @@ class Cat {
             lightBubble.setDepth(1);
             
             // 如果超过最大数量，确保光效泡泡数量与普通泡泡一致
-            if (this.lightBubbles.length >= MAX_BUBBLES) {
+            if (this.lightBubbles.length >= Cat.MAX_BUBBLES) {  // 使用类的静态常量
                 const oldLight = this.lightBubbles.shift();
                 oldLight.destroy();
             }
             this.lightBubbles.push(lightBubble);
             
             this.currentBubble = null;
+        }
+    }
+
+    // 添加碰撞检测更新函数
+    checkBubbleCollisions() {
+        if (this.currentBubble && this.currentBubble.state === Bubble.State.GROWING) {
+            // 检查与其他所有泡泡的碰撞
+            for (const bubble of this.bubbles) {
+                if (bubble !== this.currentBubble && 
+                    bubble.state === Bubble.State.FLOATING) {
+                    if (this.currentBubble.checkCollision(bubble)) {
+                        // 如果发生碰撞，停止当前泡泡的放大
+                        this.stopBlowingBubble();
+                        break;
+                    }
+                }
+            }
         }
     }
 } 

@@ -13,6 +13,8 @@ class CatState {
     }
 
     enter() {}
-    update() {}
+    
+    update(input) {}
+    
     exit() {}
 } 
