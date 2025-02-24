@@ -18,10 +18,6 @@
 // 使用配置管理器获取配置
 let config = GameConfig.getConfig();
 let game = new Phaser.Game(config);
-let cat;
-let currentBubble; // 当前正在吹的泡泡
-let bubbles = []; // 存储所有场景中的泡泡
-let lightBubbles = []; // 存储所有场景中的光效泡泡
 
 function preload() {
     // 使用资源管理器加载所有资源
@@ -29,14 +25,21 @@ function preload() {
 }
 
 function create() {
+    // 初始化碰撞管理器
+    this.collisionManager = new CollisionManager(this);
+
     // 添加背景
     this.add.tileSprite(0, 0, 1920, 1080, 'background').setOrigin(0, 0);
     
     // 初始化输入控制（包含键盘和鼠标）
     this.inputManager = new InputManager(this);
 
+    // 初始化泡泡数组
+    this.bubbles = [];
+    this.lightBubbles = [];
+
     // 创建猫咪实例
-    cat = new Cat(this, 960, 540);
+    this.cat = new Cat(this, 960, 540);
     
     // 初始化敌人数组
     this.enemies = [];
@@ -66,10 +69,10 @@ function create() {
     
     // 清理所有泡泡
     this.clearAllBubbles = () => {
-        bubbles.forEach(bubble => bubble.destroy());
-        lightBubbles.forEach(lightBubble => lightBubble.destroy());
-        bubbles = [];
-        lightBubbles = [];
+        this.bubbles.forEach(bubble => bubble.destroy());
+        this.lightBubbles.forEach(lightBubble => lightBubble.destroy());
+        this.bubbles = [];
+        this.lightBubbles = [];
     };
 
     // 添加回泡泡数量限制
@@ -81,37 +84,62 @@ function create() {
     // 启动UI场景
     this.scene.launch('UIScene');
 
+    // 监听游戏结束事件
+    this.events.on('gameOver', () => {
+        // 暂停所有更新
+        this.scene.pause();
+        
+        // 显示游戏结束UI
+        const width = this.game.config.width;
+        const height = this.game.config.height;
+        
+        // 添加半透明黑色背景
+        const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
+        overlay.setOrigin(0, 0);
+        overlay.setDepth(1000);
+        
+        // 添加游戏结束文本
+        const gameOverText = this.add.text(width/2, height/2 - 50, 'Game Over', {
+            fontSize: '64px',
+            fill: '#fff'
+        });
+        gameOverText.setOrigin(0.5);
+        gameOverText.setDepth(1001);
+        
+        // 添加重试按钮
+        const retryButton = this.add.text(width/2, height/2 + 50, 'Click to Retry', {
+            fontSize: '32px',
+            fill: '#fff'
+        });
+        retryButton.setOrigin(0.5);
+        retryButton.setDepth(1001);
+        retryButton.setInteractive();
+        
+        // 点击重试按钮重启游戏
+        retryButton.on('pointerdown', () => {
+            this.scene.restart();
+        });
+    });
 }
 
 function update() {
     // 更新猫咪，传入所有输入控制
-    cat.update(
+    this.cat.update(
         this.inputManager.getCursors(), 
         this.inputManager.getWASDKeys(),
         this.inputManager.getMouseKeys()
     );
-    
-    // 更新所有敌人并检查碰撞
+
+    // 更新所有敌人并
     if (this.enemies && this.enemies.length > 0) {
         this.enemies.forEach(enemy => {
             if (enemy && enemy.update) {
                 enemy.update();
-                
-
-                if (enemy.checkBubbleCollision(bubbles)) {
-                    console.log('Enemy in bubble!');
-                }
-                
-                // 检查与猫咪的碰撞
-                if (!enemy.checkBubbleCollision(bubbles) &&  // 只有不在泡泡中才检查与猫的碰撞
-                    enemy.checkCollision && 
-                    enemy.checkCollision(cat)) {
-                    // 处理碰撞逻辑
-                    console.log('Enemy hit cat!');
-                }
             }
         });
     }
+
+    this.collisionManager.update();
 }
 
 // 生成闪电球敌人

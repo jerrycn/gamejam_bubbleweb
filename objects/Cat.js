@@ -13,7 +13,7 @@
  * 
  * @class Cat
  */
-class Cat {
+class Cat extends GameObject {
     // 添加静态常量
     static MAX_BUBBLES = 20;  // 最大泡泡数量
 
@@ -25,10 +25,11 @@ class Cat {
     };
 
     constructor(scene, x, y) {
+        super(scene);
         this.scene = scene;
         this.sprite = scene.add.sprite(x, y, 'cat_walk_0');
         this.sprite.setScale(0.5);
-        this.sprite.setDepth(2);
+        this.sprite.setDepth(10);
         
         this.stateMachine = new StateMachine();
         this.stateMachine.changeState(new CatIdleState(this));
@@ -43,8 +44,12 @@ class Cat {
 
         // 初始化泡泡相关属性
         this.currentBubble = null;
-        this.bubbles = bubbles;  // 引用全局泡泡数组
-        this.lightBubbles = lightBubbles;  // 引用全局光效泡泡数组
+        this.bubbles = this.scene.bubbles;  
+        this.lightBubbles = this.scene.lightBubbles;  // 引用全局光效泡泡数组
+
+        // 初始化属性
+        this.isInvincible = false;
+        this.isDead = false;
     }
 
     createAnimations() {
@@ -74,6 +79,28 @@ class Cat {
             repeat: -1
         });
     }
+    // 受伤
+    hurt() {
+        if (this.isDead) return;  // 如果已经死亡，不再处理
+
+        if (!this.isInvincible) {
+            this.isDead = true;  // 设置死亡状态
+            this.stateMachine.changeState(new CatDeadState(this));
+            
+            // 播放死亡音效（如果有）
+            if (this.scene.audioManager) {
+                // this.scene.audioManager.playSound('cat_death');
+            }
+        }
+    }
+
+    // 重生/重置
+    reset() {
+        this.isDead = false;
+        this.isInvincible = false;
+        this.sprite.setAlpha(1);
+        this.stateMachine.changeState(new CatIdleState(this));
+    }
 
     update(cursors, wasdKeys, mouseKeys) {
         // 将所有输入参数作为对象传入状态机
@@ -83,8 +110,6 @@ class Cat {
             mouseKeys
         };
         this.stateMachine.update(input);
-
-        
     }
 
     getPosition() {
@@ -156,23 +181,6 @@ class Cat {
             this.lightBubbles.push(lightBubble);
             
             this.currentBubble = null;
-        }
-    }
-
-    // 添加碰撞检测更新函数
-    checkBubbleCollisions() {
-        if (this.currentBubble && this.currentBubble.state === Bubble.State.GROWING) {
-            // 检查与其他所有泡泡的碰撞
-            for (const bubble of this.bubbles) {
-                if (bubble !== this.currentBubble && 
-                    bubble.state === Bubble.State.FLOATING) {
-                    if (this.currentBubble.checkCollision(bubble)) {
-                        // 如果发生碰撞，停止当前泡泡的放大
-                        this.stopBlowingBubble();
-                        break;
-                    }
-                }
-            }
         }
     }
 } 

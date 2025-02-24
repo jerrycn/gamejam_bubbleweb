@@ -17,6 +17,7 @@
     <meta charset="utf-8">
     <title>猫咪泡泡游戏</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="objects/GameObject.js"></script>
     <script src="objects/Bubble.js"></script>
     <script src="objects/LightBubble.js"></script>
     <script src="scenes/UIScene.js"></script>
@@ -27,6 +28,7 @@
     <script src="managers/GameConfig.js"></script>
     <script src="managers/InputManager.js"></script>
     <script src="managers/AudioManager.js"></script>
+    <script src="managers/CollisionManager.js"></script>
     <script src="states/StateMachine.js"></script>
     <script src="states/CatState.js"></script>
     <script src="states/CatIdleState.js"></script>
@@ -36,6 +38,7 @@
     <script src="states/EnemyMovingState.js"></script>
     <script src="states/EnemyIdleState.js"></script>
     <script src="states/EnemyDeadState.js"></script>
+    <script src="states/CatDeadState.js"></script>
     <style>
         body {
             margin: 0;

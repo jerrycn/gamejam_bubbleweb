@@ -13,14 +13,14 @@
 class LightEnemy extends Enemy {
     constructor(scene, x, y) {
         super(scene, x, y);
-        this.speed = 2;  // 速度可以调整
+        this.speed = 2;  // 初始速度
         this.createSprite(x, y);
-        this.velocity = { x: 0, y: 0 };
-        // 添加缓动效果
-        this.acceleration = 0.1;
-        this.maxSpeed = 3;
+        this.isChasing = true;  // 追逐状态
+        this.moveVectorX = 0;   // 移动向量
+        this.moveVectorY = 0;
+        this.maxSpeed = 3;      // 最大速度（反弹时使用）
+        this.checkScreenBoundsTimer = null;  // 用于存储边界检查定时器
 
-        
         this.init();
     }
 
@@ -44,8 +44,6 @@ class LightEnemy extends Enemy {
                 repeat: -1
             });
         }
-        
-    
     }
 
     // 播放空闲动画
@@ -56,72 +54,79 @@ class LightEnemy extends Enemy {
 
     update() {
         if (!this.isActive) return;
-
+        
+        // 更新状态机
         super.update();
+    }
 
-/*
-        // 获取猫咪位置（从猫咪的sprite获取）
-        const catPos = cat.getPosition();  // 使用 cat.getPosition()
-        const dx = catPos.x - this.sprite.x;
-        const dy = catPos.y - this.sprite.y;
-        
-        // 计算方向向量
-        const length = Math.sqrt(dx * dx + dy * dy);
-        if (length > 0) {  // 防止除以0
-            // 使用加速度平滑移动
-            const targetVx = (dx / length) * this.maxSpeed;
-            const targetVy = (dy / length) * this.maxSpeed;
+    // 重写碰撞回调
+    onCollision(bubble) {
+
+        // 2. constructor.name
+        if (bubble.constructor.name === 'Cat') {
+            super.onCollision(bubble);
+        }
+
+        if (!bubble || !bubble.sprite) return;
+
+        // 计算碰撞点的法线向量（从泡泡中心指向敌人）
+        const nx = this.sprite.x - bubble.sprite.x;
+        const ny = this.sprite.y - bubble.sprite.y;
+        const len = Math.sqrt(nx * nx + ny * ny);
+        const normalX = nx / len;
+        const normalY = ny / len;
+
+        // 计算反弹向量（反射定律：r = d - 2(d·n)n）
+        const dot = this.moveVectorX * normalX + this.moveVectorY * normalY;
+        this.moveVectorX = this.moveVectorX - 2 * dot * normalX;
+        this.moveVectorY = this.moveVectorY - 2 * dot * normalY;
+
+        // 切换到反弹状态
+        this.isChasing = false;
+        this.speed = this.maxSpeed;  // 使用最大速度
+
+        // 清除之前的定时器（如果存在）
+        if (this.checkScreenBoundsTimer) {
+            this.checkScreenBoundsTimer.remove();
+        }
+
+        // 设置新的定时器检查屏幕边界
+        this.checkScreenBoundsTimer = this.scene.time.addEvent({
+            delay: 100,
+            callback: this.checkScreenBounds,
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    // 重写移动向量计算
+    calculateMoveVector() {
+        if (!this.isChasing) {
+            // 如果不是追逐状态，保持当前反弹向量
+            return;
+        }
+
+        // 调用父类的计算方法
+        super.calculateMoveVector();
+    }
+
+    // 检查是否超出屏幕边界
+    checkScreenBounds() {
+        const bounds = this.scene.physics.world.bounds;
+        if (this.sprite.x < bounds.x || 
+            this.sprite.x > bounds.width ||
+            this.sprite.y < bounds.y || 
+            this.sprite.y > bounds.height) {
             
-            this.velocity.x += (targetVx - this.velocity.x) * this.acceleration;
-            this.velocity.y += (targetVy - this.velocity.y) * this.acceleration;
+            // 清除定时器
+            if (this.checkScreenBoundsTimer) {
+                this.checkScreenBoundsTimer.remove();
+                this.checkScreenBoundsTimer = null;
+            }
+            
+            // 销毁敌人
+            this.destroy();
         }
-
-        // 更新位置
-        this.sprite.x += this.velocity.x;
-        this.sprite.y += this.velocity.y;
-
-        // 检查边界碰撞
-        this.checkBoundaryCollision();
-        */
-    }
-
-    checkBoundaryCollision() {
-        const bounds = {
-            left: 50,  // 留出一些边距
-            right: this.scene.game.config.width - 50,
-            top: 50,
-            bottom: this.scene.game.config.height - 50
-        };
-
-        // 改进碰撞反弹逻辑
-        if (this.sprite.x < bounds.left) {
-            this.sprite.x = bounds.left;
-            this.velocity.x = Math.abs(this.velocity.x);
-        } else if (this.sprite.x > bounds.right) {
-            this.sprite.x = bounds.right;
-            this.velocity.x = -Math.abs(this.velocity.x);
-        }
-
-        if (this.sprite.y < bounds.top) {
-            this.sprite.y = bounds.top;
-            this.velocity.y = Math.abs(this.velocity.y);
-        } else if (this.sprite.y > bounds.bottom) {
-            this.sprite.y = bounds.bottom;
-            this.velocity.y = -Math.abs(this.velocity.y);
-        }
-    }
-
-    // 修改碰撞检测方法
-    checkCollision(cat) {
-        if (!this.isActive || !this.sprite) return false;
-        
-        const catPos = cat.getPosition();
-        const dx = this.sprite.x - catPos.x;
-        const dy = this.sprite.y - catPos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const minDistance = (this.sprite.width + cat.sprite.width) * 0.4; // 可以调整碰撞范围
-        
-        return distance < minDistance;
     }
 
     // 获取随机出生点

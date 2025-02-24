@@ -18,10 +18,11 @@ class EnemyIdleState extends EnemyState {
     }
 
     update() {
+        /*
         // 如果在泡泡中，保持空闲状态
-        if (this.enemy.checkBubbleCollision(bubbles)) {
+        if (this.enemy.checkBubbleCollision(this.enemy.scene.bubbles)) {
             return;
-        }
+        }*/
     }
 
     exit() {

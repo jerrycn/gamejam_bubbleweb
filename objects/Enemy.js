@@ -7,7 +7,7 @@
  * 
  * @class Enemy
  */
-class Enemy {
+class Enemy extends GameObject {
     // 敌人的状态枚举
     static State = {
         MOVING: 'moving',
@@ -16,10 +16,14 @@ class Enemy {
     };
 
     constructor(scene, x, y) {
+        super(scene);
         this.scene = scene;
         this.sprite = null;
         this.speed = 2; // 设置默认移动速度
         this.isActive = true;
+        this.isChasing = true;  // 添加追逐状态
+        this.moveVectorX = 0;   // 移动向量
+        this.moveVectorY = 0;
 
         // 初始化状态机
         this.stateMachine = new StateMachine();
@@ -33,13 +37,47 @@ class Enemy {
 
     }
 
+    // 计算移动向量
+    calculateMoveVector() {
+        // 确保 cat 存在
+        if (!this.scene.cat) {
+            console.warn('Cat not found in scene');
+            return;
+        }
+
+        // 计算与猫咪的位置向量
+        const dx = this.scene.cat.sprite.x - this.sprite.x;
+        const dy = this.scene.cat.sprite.y - this.sprite.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance === 0) {
+            this.moveVectorX = 0;
+            this.moveVectorY = 0;
+            return;
+        }
+        
+        // 标准化向量
+        this.moveVectorX = dx / distance;
+        this.moveVectorY = dy / distance;
+    }
+
+    // 碰撞回调
+    onCollision(other) {
+        this.stateMachine.changeState(new EnemyIdleState(this));
+        console.log('Enemy onCollision', other);
+    }
+
+    /*
     // 检查是否与泡泡碰撞
     checkBubbleCollision(bubbles) {
         const enemyX = this.sprite.x;
         const enemyY = this.sprite.y;
         const enemyRadius = this.sprite.displayWidth / 4;
 
-        for (const bubble of bubbles) {
+        // 使用场景实例中的 bubbles
+        const sceneBubbles = this.scene.bubbles;
+        
+        for (const bubble of sceneBubbles) {
             if (bubble.state === Bubble.State.FLOATING) {
                 const dx = enemyX - bubble.sprite.x;
                 const dy = enemyY - bubble.sprite.y;
@@ -51,7 +89,7 @@ class Enemy {
             }
         }
         return false;
-    }
+    }*/
 
     update() {
         // 更新状态机
