@@ -40,18 +40,13 @@ class AssetManager {
         }
 
         // 加载音频资源
-        scene.load.audio('bgm', 'assets/audio/bgm.mp3', {
-            instances: 1
-        });
+        scene.load.audio('bgm', 'assets/audio/bgm.mp3');  // 开始场景音乐
+        scene.load.audio('game_bgm', 'assets/audio/game_bgm.mp3');  // 游戏场景音乐
         scene.load.audio('cat_move', 'assets/audio/cat_move.mp3', {
             instances: 2
         });
-        scene.load.audio('bubble_blowing', 'assets/audio/bubble_blowing.mp3', {
-            instances: 2
-        });
-        scene.load.audio('bubble_blowing_end', 'assets/audio/bubble_blowing_end.mp3', {
-            instances: 2
-        });
+        scene.load.audio('bubble_blowing', 'assets/audio/bubble_blowing.mp3');
+        scene.load.audio('bubble_blowing_end', 'assets/audio/bubble_blowing_end.mp3');
 
         // 加载闪电球动画帧
         for (let i = 1; i <= 19; i++) {

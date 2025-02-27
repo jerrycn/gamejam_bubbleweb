@@ -1,0 +1,187 @@
+@startuml 猫咪泡泡游戏类图
+
+' 图表标题
+title 猫咪泡泡游戏 - 类架构图
+
+' 注释说明
+note as N1
+  游戏主要分为三层:
+  1. 场景层: 负责不同游戏状态的展示和控制
+  2. 管理器层: 提供各种功能支持
+  3. 游戏对象层: 实现具体的游戏元素
+end note
+
+' 设置样式
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+' 场景基类
+abstract class Scene <<Phaser场景基类>> {
+    ' Phaser提供的场景基础功能
+}
+
+' 游戏场景类
+class GameScene <<游戏主场景>> {
+    ' 主要游戏逻辑场景
+    -collisionManager: 碰撞管理器
+    -inputManager: 输入管理器
+    -audioManager: 音频管理器
+    -cat: 猫咪实例
+    -bubbles[]: 泡泡数组
+    -lightBubbles[]: 光效泡泡数组
+    -enemies[]: 敌人数组
+    +create(): void '初始化场景元素
+    +update(): void '更新场景状态
+    +calculateBubbleArea(): void '计算泡泡覆盖面积
+    +shutdown(): void '清理场景资源
+}
+
+' UI场景类
+class UIScene <<UI界面场景>> {
+    ' 用户界面场景,显示游戏状态和控制
+    -version: string '游戏版本号
+    -progress: number '游戏进度
+    -pauseMenu: Container '暂停菜单容器
+    -progressBar: Rectangle '进度条显示
+    +create(): void '创建UI元素
+    +createPauseMenu(): void '创建暂停菜单
+    +showPauseMenu(): void '显示暂停菜单
+    +hidePauseMenu(): void '隐藏暂停菜单
+    +updateProgress(): void '更新进度显示
+}
+
+' 开始场景
+class StartScene <<开始场景>> {
+    ' 游戏开始界面
+    -audioManager: AudioManager '音频控制
+    +create(): void '创建开始界面
+    +preload(): void '预加载资源
+}
+
+' 胜利场景
+class VictoryScene <<胜利场景>> {
+    ' 游戏胜利显示界面
+    +create(): void '创建胜利界面
+}
+
+' 游戏结束场景
+class GameOverScene <<游戏结束场景>> {
+    ' 游戏失败显示界面
+    +create(): void '创建结束界面
+}
+
+' 管理器接口
+interface Manager <<管理器接口>> {
+    ' 所有管理器的基础接口
+}
+
+' 音频管理器
+class AudioManager <<音频管理器>> {
+    ' 控制游戏音频播放
+    -scene: Scene '场景引用
+    -bgMusic: Sound '背景音乐
+    -sounds: Map '音效集合
+    +playMusic(): void '播放背景音乐
+    +stopMusic(): void '停止背景音乐
+    +pauseMusic(): void '暂停背景音乐
+    +resumeMusic(): void '恢复背景音乐
+    +playSound(): void '播放音效
+}
+
+' 资源管理器
+class AssetManager <<资源管理器>> {
+    ' 管理游戏资源加载
+    {static} +loadAssets(): void '加载所有游戏资源
+}
+
+' 碰撞管理器
+class CollisionManager <<碰撞管理器>> {
+    ' 处理游戏对象间的碰撞
+    -scene: Scene '场景引用
+    -collisionHandlers: Map '碰撞处理器集合
+    +update(): void '更新碰撞检测
+}
+
+' 游戏状态管理器
+class GameStateManager <<游戏状态管理器>> {
+    ' 管理全局游戏状态
+    {static} +musicEnabled: boolean '音乐开关状态
+    {static} +toggleMusic(): boolean '切换音乐状态
+    {static} +isMusicEnabled(): boolean '获取音乐状态
+}
+
+' 输入管理器
+class InputManager <<输入管理器>> {
+    ' 处理用户输入
+    -scene: Scene '场景引用
+    -cursors: CursorKeys '方向键
+    -wasdKeys: Keys 'WASD键
+    +getCursors(): CursorKeys '获取方向键状态
+    +getWASDKeys(): Keys '获取WASD键状态
+    +getMouseKeys(): MouseKeys '获取鼠标状态
+}
+
+' 游戏对象基类
+abstract class GameObject <<游戏对象基类>> {
+    ' 所有游戏对象的基类
+    #scene: Scene '场景引用
+    #sprite: Sprite '精灵对象
+    +update(): void '更新对象状态
+    +destroy(): void '销毁对象
+}
+
+' 猫咪类
+class Cat <<猫咪类>> {
+    ' 玩家控制的主角
+    -stateMachine: StateMachine '状态机
+    -speed: number '移动速度
+    +update(): void '更新猫咪状态
+    +blow(): void '吹泡泡动作
+}
+
+' 敌人基类
+abstract class Enemy <<敌人基类>> {
+    ' 敌人基础类
+    #speed: number '移动速度
+    #isChasing: boolean '是否追逐玩家
+    +update(): void '更新敌人状态
+}
+
+' 闪电球敌人
+class LightEnemy <<闪电球敌人>> {
+    ' 具体的敌人类型
+    +createSprite(): void '创建敌人精灵
+    +getRandomSpawnPoint(): Point '获取随机生成位置
+}
+
+' 关系定义
+Scene <|-- GameScene : "继承"
+Scene <|-- UIScene : "继承"
+Scene <|-- StartScene : "继承"
+Scene <|-- VictoryScene : "继承"
+Scene <|-- GameOverScene : "继承"
+
+Manager <|.. AudioManager : "实现"
+Manager <|.. AssetManager : "实现"
+Manager <|.. CollisionManager : "实现"
+Manager <|.. GameStateManager : "实现"
+Manager <|.. InputManager : "实现"
+
+GameObject <|-- Cat : "继承"
+GameObject <|-- Enemy : "继承"
+Enemy <|-- LightEnemy : "继承"
+
+GameScene --> AudioManager : "使用"
+GameScene --> CollisionManager : "使用"
+GameScene --> InputManager : "使用"
+GameScene --> Cat : "包含"
+GameScene --> LightEnemy : "包含"
+
+UIScene --> GameStateManager : "使用"
+StartScene --> AudioManager : "使用"
+
+@enduml

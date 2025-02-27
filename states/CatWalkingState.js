@@ -3,10 +3,10 @@
  */
 class CatWalkingState extends CatState {
     enter() {
+        // 播放行走动画
         this.cat.sprite.play('walk');
-        if (!this.cat.moveSound.isPlaying) {
-            this.cat.moveSound.play();
-        }
+        // 播放移动音效
+        this.cat.playMoveSound();
     }
 
     update(input) {
@@ -36,17 +36,22 @@ class CatWalkingState extends CatState {
 
         // 检查吹泡泡输入
         if (mouseKeys.down && !this.cat.isInBubble(this.cat.bubbles)) {
+            this.cat.stopMoveSound();  // 停止移动音效
             this.cat.stateMachine.changeState(new CatBlowingState(this.cat));
             return;
         }
 
         // 如果没有移动输入，切换到待机状态
         if (!isMoving) {
+            this.cat.stopMoveSound();  // 停止移动音效
             this.cat.stateMachine.changeState(new CatIdleState(this.cat));
         }
     }
 
     exit() {
-        this.cat.moveSound.stop();
+        // 停止行走动画
+        this.cat.sprite.stop();
+        // 停止移动音效
+        this.cat.stopMoveSound();
     }
 } 

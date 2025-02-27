@@ -34,10 +34,9 @@ class Cat extends GameObject {
         this.stateMachine = new StateMachine();
         this.stateMachine.changeState(new CatIdleState(this));
 
-        this.moveSound = scene.sound.add('cat_move', {
-            volume: 0.3,
-            loop: true
-        });
+        // 初始化音频管理器
+        this.audioManager = new AudioManager(this.scene);
+        this.moveSound = null;  // 存储移动音效的引用
 
         this.createAnimations();
         this.sprite.play('walk');
@@ -182,5 +181,32 @@ class Cat extends GameObject {
             
             this.currentBubble = null;
         }
+    }
+
+    // 播放移动音效
+    playMoveSound() {
+        if (!this.moveSound) {
+            this.moveSound = this.audioManager.playSound('cat_move', {
+                volume: 0.3,
+                loop: true
+            });
+        }
+    }
+
+    // 停止移动音效
+    stopMoveSound() {
+        if (this.moveSound) {
+            this.audioManager.stopSound('cat_move');
+            this.moveSound = null;
+        }
+    }
+
+    // 在销毁时清理音频资源
+    destroy() {
+        this.stopMoveSound();
+        if (this.audioManager) {
+            this.audioManager.destroy();
+        }
+        super.destroy();
     }
 } 

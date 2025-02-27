@@ -22,14 +22,7 @@ class GameConfig {
                     debug: false
                 }
             },
-            scene: [
-                {
-                    preload: preload,
-                    create: create,
-                    update: update
-                },
-                UIScene
-            ]
+            scene: [] // 场景将在 game.js 中设置
         };
     }
 } 

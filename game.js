@@ -17,6 +17,11 @@
 
 // 使用配置管理器获取配置
 let config = GameConfig.getConfig();
+
+// 添加场景
+config.scene = [StartScene, GameScene, UIScene, GameOverScene, VictoryScene];
+
+// 创建游戏实例
 let game = new Phaser.Game(config);
 
 function preload() {
