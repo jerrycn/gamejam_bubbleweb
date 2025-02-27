@@ -1,0 +1,193 @@
+@startuml
+' ======= 1. 状态模式 =======
+' 中文名称: 状态模式
+' 主要功能: 管理对象在不同状态下的行为变化
+' 核心类说明:
+' - CatState: 猫咪状态基类
+' - Cat: 具体状态持有者
+package "状态模式 (State Pattern)" {
+    abstract class CatState <<猫咪状态基类>> {
+        # cat: Cat '猫咪引用
+        + enter() '进入状态
+        + exit() '退出状态
+        + update(input) '更新状态
+    }
+    
+    class CatIdleState <<待机状态>>
+    class CatWalkingState <<行走状态>>
+    class CatBlowingState <<吹泡泡状态>>
+    
+    class Cat <<猫咪类>> {
+        - stateMachine: StateMachine '状态机
+        + setState(state) '设置状态
+        + update(input) '更新
+    }
+    
+    CatState <|-- CatIdleState
+    CatState <|-- CatWalkingState
+    CatState <|-- CatBlowingState
+    Cat o-- CatState
+}
+
+' ======= 2. 策略模式 =======
+' 中文名称: 策略模式
+' 主要功能: 封装不同的算法,使其可以互相替换
+' 核心类说明:
+' - CollisionManager: 碰撞管理器
+' - CollisionHandler: 碰撞处理策略接口
+package "策略模式 (Strategy Pattern)" {
+    class CollisionManager <<碰撞管理器>> {
+        - collisionHandlers: Map '碰撞处理器映射
+        + registerCollisionHandlers() '注册处理器
+        + checkCollision(obj1, obj2) '检查碰撞
+    }
+    
+    interface CollisionHandler <<碰撞处理接口>> {
+        + check(obj1, obj2): boolean '检查碰撞
+        + handle(obj1, obj2): void '处理碰撞
+    }
+    
+    class BubbleBubbleHandler <<泡泡间碰撞处理器>>
+    class BubbleEnemyHandler <<泡泡与敌人碰撞处理器>>
+    
+    CollisionHandler <|.. BubbleBubbleHandler
+    CollisionHandler <|.. BubbleEnemyHandler
+    CollisionManager o-- CollisionHandler
+}
+
+' ======= 3. 观察者模式 =======
+' 中文名称: 观察者模式
+' 主要功能: 定义对象间的一对多依赖关系
+' 核心类说明:
+' - GameScene: 游戏场景(被观察者)
+' - UIScene: UI场景(观察者)
+package "观察者模式 (Observer Pattern)" {
+    class GameScene <<游戏场景>> {
+        + events: EventEmitter '事件发射器
+        + emit(eventName, data) '发送事件
+    }
+    
+    class UIScene <<UI场景>> {
+        + listenToGameEvents() '监听游戏事件
+    }
+    
+    class AudioManager <<音频管理器>> {
+        + listenToGameEvents() '监听游戏事件
+    }
+    
+    GameScene --> UIScene: 通知
+    GameScene --> AudioManager: 通知
+}
+
+' ======= 4. 单例模式 =======
+' 中文名称: 单例模式
+' 主要功能: 确保类只有一个实例
+' 核心类说明:
+' - AssetManager: 资源管理器
+' - GameStateManager: 游戏状态管理器
+package "单例模式 (Singleton Pattern)" {
+    class AssetManager <<资源管理器>> {
+        - {static} instance: AssetManager '单例实例
+        + {static} getInstance(): AssetManager '获取实例
+        + {static} loadAssets(scene) '加载资源
+    }
+    
+    class GameStateManager <<游戏状态管理器>> {
+        - {static} instance: GameStateManager '单例实例
+        + {static} getInstance(): GameStateManager '获取实例
+        + {static} saveState() '保存状态
+        + {static} loadState() '加载状态
+    }
+}
+
+' ======= 5. 工厂模式 =======
+' 中文名称: 工厂模式
+' 主要功能: 创建对象而不暴露创建逻辑
+' 核心类说明:
+' - Enemy: 敌人基类
+' - EnemyFactory: 敌人工厂
+package "工厂模式 (Factory Pattern)" {
+    abstract class Enemy <<敌人基类>>
+    class LightEnemy <<闪电球敌人>>
+    class EnemyFactory <<敌人工厂>> {
+        + {static} createEnemy(type, scene, x, y) '创建敌人
+    }
+    
+    Enemy <|-- LightEnemy
+    EnemyFactory ..> Enemy: 创建
+    EnemyFactory ..> LightEnemy: 创建
+}
+
+' ======= 6. 组合模式 =======
+' 中文名称: 组合模式
+' 主要功能: 将对象组合成树形结构
+' 核心类说明:
+' - GameObject: 游戏对象基类
+package "组合模式 (Composite Pattern)" {
+    abstract class GameObject <<游戏对象基类>> {
+        + sprite: Sprite '精灵对象
+        + update() '更新
+        + destroy() '销毁
+    }
+    
+    class Cat <<猫咪>>
+    class Enemy <<敌人>>
+    class Bubble <<泡泡>>
+    
+    GameObject <|-- Cat
+    GameObject <|-- Enemy
+    GameObject <|-- Bubble
+}
+
+' ======= 7. 命令模式 =======
+' 中文名称: 命令模式
+' 主要功能: 将请求封装成对象
+' 核心类说明:
+' - InputManager: 输入管理器
+' - Command: 命令接口
+package "命令模式 (Command Pattern)" {
+    class InputManager <<输入管理器>> {
+        + getCursors() '获取方向键
+        + getWASDKeys() '获取WASD键
+        + getMouseKeys() '获取鼠标按键
+    }
+    
+    interface Command <<命令接口>> {
+        + execute() '执行命令
+    }
+    
+    class MoveCommand <<移动命令>>
+    class BlowCommand <<吹泡泡命令>>
+    
+    Command <|.. MoveCommand
+    Command <|.. BlowCommand
+    InputManager --> Command
+}
+
+' ======= 8. 外观模式 =======
+' 中文名称: 外观模式
+' 主要功能: 为子系统提供统一的接口
+' 核心类说明:
+' - AudioManager: 音频管理器
+package "外观模式 (Facade Pattern)" {
+    class AudioManager <<音频管理器>> {
+        - sounds: Map '音效映射
+        + playSound(key) '播放音效
+        + stopSound(key) '停止音效
+        + playMusic(key) '播放音乐
+        + stopMusic() '停止音乐
+    }
+    
+    class Sound <<音效类>>
+    class Music <<音乐类>>
+    
+    AudioManager o-- Sound
+    AudioManager o-- Music
+}
+
+' 显示系统核心类之间的关系
+GameScene --> CollisionManager: 使用
+GameScene --> InputManager: 使用
+Cat --> AudioManager: 使用
+Enemy --> AudioManager: 使用
+@enduml

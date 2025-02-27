@@ -53,5 +53,11 @@ class AssetManager {
             const frameNumber = i.toString().padStart(4, '0');
             scene.load.image(`dianqiu${frameNumber}`, `assets/enemy/lightning/dianqiu${frameNumber}.png`);
         }
+
+        // 加载Boss动画帧
+        for (let i = 1; i <= 5; i++) {
+            const frameNumber = i.toString().padStart(4, '0');
+            scene.load.image(`boss${frameNumber}`, `assets/enemy/boss/boss${frameNumber}.png`);
+        }
     }
 } 

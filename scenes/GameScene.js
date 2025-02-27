@@ -58,6 +58,21 @@ class GameScene extends Phaser.Scene {
             loop: true
         });
 
+        // 添加Boss生成函数
+        this.spawnBossEnemy = () => {
+            const spawnPoint = BossEnemy.getRandomSpawnPoint(this);
+            const boss = new BossEnemy(this, spawnPoint.x, spawnPoint.y);
+            this.enemies.push(boss);
+            console.log('Boss生成于', spawnPoint.x, spawnPoint.y);
+        };
+        
+        // 在游戏进行一段时间后生成Boss
+        this.time.addEvent({
+            delay: 60000,  // 60秒后生成Boss
+            callback: this.spawnBossEnemy,
+            callbackScope: this
+        });
+
         // 清理所有泡泡
         this.clearAllBubbles = () => {
             this.bubbles.forEach(bubble => bubble.destroy());
@@ -132,6 +147,7 @@ class GameScene extends Phaser.Scene {
     }
 
     calculateBubbleArea() {
+        console.log('----calculateBubbleArea----');
         let totalBubbleArea = 0;
         const sceneArea = this.game.config.width * this.game.config.height;
         
@@ -142,18 +158,20 @@ class GameScene extends Phaser.Scene {
             totalBubbleArea += area;
             console.log('Bubble radius:', radius, 'area:', area);
         });
-        
+        /*
         this.lightBubbles.forEach(bubble => {
             const radius = (bubble.sprite.displayWidth / 2) * bubble.sprite.scaleX;
             const area = Math.PI * radius * radius;
             totalBubbleArea += area;
             console.log('Light bubble radius:', radius, 'area:', area);
-        });
+        });*/
 
         // 调整目标面积比例（改为5%的场景面积作为100%进度）
-        const targetArea = sceneArea * 0.05;  // 降低到5%
+        const targetArea = sceneArea * 0.60;  // 降低到5%
         const progress = (totalBubbleArea / targetArea) * 100;
         const clampedProgress = Math.min(progress, 100);
+
+        console.log('targetArea:', targetArea);
 
         console.log('Emitting progress update:', clampedProgress);
         this.events.emit('progressUpdate', clampedProgress);
@@ -161,7 +179,7 @@ class GameScene extends Phaser.Scene {
         // 调试输出
         if (this._lastDebugTime === undefined || Date.now() - this._lastDebugTime > 1000) {
             this._lastDebugTime = Date.now();
-            console.log('Total bubble area:', totalBubbleArea);
+            //console.log('Total bubble area:', totalBubbleArea);
             console.log('Scene area:', sceneArea);
             console.log('Target area:', targetArea);
             console.log('Progress:', clampedProgress + '%');
