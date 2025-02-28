@@ -54,10 +54,24 @@ class AssetManager {
             scene.load.image(`dianqiu${frameNumber}`, `assets/enemy/lightning/dianqiu${frameNumber}.png`);
         }
 
-        // 加载Boss动画帧
-        for (let i = 1; i <= 5; i++) {
-            const frameNumber = i.toString().padStart(4, '0');
-            scene.load.image(`boss${frameNumber}`, `assets/enemy/boss/boss${frameNumber}.png`);
+        // 加载Boss动画帧 - 修改文件名格式
+        for (let i = 0; i <= 19; i++) {
+            const frameNumber = i.toString().padStart(2, '0');
+            scene.load.image(`boss${i}`, `assets/enemy/boss/boss_walk00_${frameNumber}.png`);
+        }
+
+        // 加载小怪物动画帧 - 调整为调试模式
+        for (let i = 0; i <= 14; i++) {
+            const frameNumber = i.toString().padStart(2, '0');
+            const key = `monster${i}`;
+            const path = `assets/enemy/monster/guaiwu01_walk00_${frameNumber}.png`;
+            
+            // 添加回调以检查加载是否成功
+            scene.load.image(key, path).on('filecomplete', () => {
+                console.log(`已加载: ${key} (${path})`);
+            }).on('loaderror', () => {
+                console.error(`加载失败: ${key} (${path})`);
+            });
         }
     }
 } 

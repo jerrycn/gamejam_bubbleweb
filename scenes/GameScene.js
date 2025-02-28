@@ -66,11 +66,30 @@ class GameScene extends Phaser.Scene {
             console.log('Boss生成于', spawnPoint.x, spawnPoint.y);
         };
         
+        // 立即生成一个Boss
+        //this.spawnBossEnemy();
+
         // 在游戏进行一段时间后生成Boss
         this.time.addEvent({
-            delay: 60000,  // 60秒后生成Boss
+            delay: 10000,  // 60秒后生成Boss
             callback: this.spawnBossEnemy,
             callbackScope: this
+        });
+
+        // 添加小怪物生成函数
+        this.spawnSmallMonsterEnemy = () => {
+            const spawnPoint = SmallMonsterEnemy.getRandomSpawnPoint(this);
+            const monster = new SmallMonsterEnemy(this, spawnPoint.x, spawnPoint.y);
+            this.enemies.push(monster);
+            console.log('小怪物生成于', spawnPoint.x, spawnPoint.y);
+        };
+
+        // 设置小怪物生成定时器
+        this.time.addEvent({
+            delay: 5000,  // 15秒生成一次
+            callback: this.spawnSmallMonsterEnemy,
+            callbackScope: this,
+            loop: true
         });
 
         // 清理所有泡泡
@@ -158,13 +177,7 @@ class GameScene extends Phaser.Scene {
             totalBubbleArea += area;
             console.log('Bubble radius:', radius, 'area:', area);
         });
-        /*
-        this.lightBubbles.forEach(bubble => {
-            const radius = (bubble.sprite.displayWidth / 2) * bubble.sprite.scaleX;
-            const area = Math.PI * radius * radius;
-            totalBubbleArea += area;
-            console.log('Light bubble radius:', radius, 'area:', area);
-        });*/
+        
 
         // 调整目标面积比例（改为5%的场景面积作为100%进度）
         const targetArea = sceneArea * 0.60;  // 降低到5%
