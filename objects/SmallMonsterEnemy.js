@@ -12,7 +12,7 @@ class SmallMonsterEnemy extends Enemy {
     constructor(scene, x, y) {
         super(scene, x, y);
         this.scene = scene;
-        this.speed = 2.0; // 设置移动速度（比Boss快）
+        this.speed = 2.5; // 设置移动速度（比Boss快）
         this.health = 2;  // 设置生命值（比Boss少）
         this.radius = 60; // 增加碰撞半径，原来是40
         
@@ -21,8 +21,7 @@ class SmallMonsterEnemy extends Enemy {
         
         // 初始化敌人
         this.init();
-        
-        console.log('小怪物创建完成');
+    
     }
     
     // 创建精灵
@@ -34,7 +33,7 @@ class SmallMonsterEnemy extends Enemy {
             console.error("monster0 纹理不存在！使用替代纹理");
             // 使用一个确定存在的纹理作为替代
             this.sprite = this.scene.add.sprite(x, y, 'dianqiu0001');
-            this.sprite.setScale(1.2);
+            //this.sprite.setScale(1.2);
             this.sprite.setDepth(4);
             return;
         }
@@ -106,43 +105,20 @@ class SmallMonsterEnemy extends Enemy {
     
     // 重写碰撞回调
     onCollision(other) {
-        // 与泡泡碰撞时减少生命值且改变方向
-        if (other instanceof Bubble) {
-            this.takeDamage();
-            
-            // 如果还活着，改变方向
-            if (this.health > 0) {
-                // 计算当前移动方向与泡泡的夹角
-                const bubbleX = other.sprite.x;
-                const bubbleY = other.sprite.y;
-                const monsterX = this.sprite.x;
-                const monsterY = this.sprite.y;
-                
-                // 计算从泡泡到怪物的向量（反弹方向）
-                const dx = monsterX - bubbleX;
-                const dy = monsterY - bubbleY;
-                
-                // 随机偏移角度，避免直线反弹
-                const randomAngle = Math.random() * Math.PI / 4 - Math.PI / 8; // -22.5到+22.5度
-                
-                // 计算新方向
-                const angle = Math.atan2(dy, dx) + randomAngle;
-                this.moveVectorX = Math.cos(angle);
-                this.moveVectorY = Math.sin(angle);
-                
-                console.log('小怪物改变方向:', {x: this.moveVectorX, y: this.moveVectorY});
-                
-                // 短暂停止后继续移动
-                this.stateMachine.changeState(new EnemyIdleState(this));
-                this.scene.time.delayedCall(300, () => { // 减少停顿时间
-                    if (this.isActive && this.stateMachine.getCurrentState() instanceof EnemyIdleState) {
-                        this.stateMachine.changeState(new EnemyMovingState(this));
-                    }
-                });
-            }
-        } else {
+
+        // 2. constructor.name
+        if (other.constructor.name === 'Cat') {
             super.onCollision(other);
+            return
         }
+
+        // 与泡泡碰撞时减改变方向
+        if (!other || !other.sprite) return;
+
+        this.calculateBounceMoveVector(other);
+        // 切换到反弹状态
+        //this.isChasing = false;
+        //this.speed = this.maxSpeed;  // 使用最大速度
     }
     
     // 重写计算移动向量方法，使其保留当前方向（如果已有方向）
@@ -202,7 +178,7 @@ class SmallMonsterEnemy extends Enemy {
             this.moveVectorX = Math.cos(angle) * magnitude;
             this.moveVectorY = Math.sin(angle) * magnitude;
             
-            console.log('小怪物在边界反弹:', {x: this.moveVectorX, y: this.moveVectorY});
+            //console.log('小怪物在边界反弹:', {x: this.moveVectorX, y: this.moveVectorY});
         }
     }
     

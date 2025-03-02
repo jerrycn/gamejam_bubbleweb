@@ -12,7 +12,7 @@ class BossEnemy extends Enemy {
     constructor(scene, x, y) {
         super(scene, x, y);
         this.scene = scene;
-        this.speed = 1.5; // 设置移动速度
+        this.speed = 1.0; // 设置移动速度
         this.health = 3;  // 设置生命值
         this.radius = 60; // 碰撞半径
         
@@ -44,7 +44,7 @@ class BossEnemy extends Enemy {
         
         // 创建精灵并设置动画
         this.sprite = this.scene.add.sprite(x, y, 'boss0');
-        this.sprite.setScale(1.5); // Boss更大
+        //this.sprite.setScale(1.5); // Boss更大
         this.sprite.setDepth(5);
         this.sprite.play('boss_move');
     }
@@ -135,43 +135,10 @@ class BossEnemy extends Enemy {
     update() {
         super.update();
         
-        // 随机触发特殊攻击
-        if (Math.random() < 0.003) { // 每次更新有0.3%的几率触发
-            this.specialAttack();
-        }
+        // // 随机触发特殊攻击
+        // if (Math.random() < 0.003) { // 每次更新有0.3%的几率触发
+        //     this.specialAttack();
+        // }
     }
     
-    // 静态方法：获取随机生成点
-    static getRandomSpawnPoint(scene) {
-        const width = scene.game.config.width;
-        const height = scene.game.config.height;
-        
-        // 使用负的偏移量，让大部分身体在屏幕外
-        const offset = -40; // 只显示一小部分
-        
-        // 在屏幕边缘随机选择一点
-        let x, y;
-        const side = Math.floor(Math.random() * 4); // 0-上, 1-右, 2-下, 3-左
-        
-        switch (side) {
-            case 0: // 上边 - 只露出底部
-                x = Phaser.Math.Between(100, width - 100);
-                y = offset;
-                break;
-            case 1: // 右边 - 只露出左侧
-                x = width - offset;
-                y = Phaser.Math.Between(100, height - 100);
-                break;
-            case 2: // 下边 - 只露出顶部
-                x = Phaser.Math.Between(100, width - 100);
-                y = height - offset;
-                break;
-            case 3: // 左边 - 只露出右侧
-                x = offset;
-                y = Phaser.Math.Between(100, height - 100);
-                break;
-        }
-        
-        return { x, y };
-    }
 } 

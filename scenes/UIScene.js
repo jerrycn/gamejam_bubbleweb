@@ -267,7 +267,7 @@ class UIScene extends Phaser.Scene {
     }
 
     updateProgress(progress) {
-        console.log('Progress update received:', progress);
+       // console.log('Progress update received:', progress);
         this.progress = progress;
         // 更新进度条宽度
         this.progressBar.width = (this.game.config.width * progress) / 100;

@@ -24,10 +24,6 @@ config.scene = [StartScene, GameScene, UIScene, GameOverScene, VictoryScene];
 // 创建游戏实例
 let game = new Phaser.Game(config);
 
-function preload() {
-    // 使用资源管理器加载所有资源
-    AssetManager.loadAssets(this);
-}
 
 //     // 初始化碰撞管理器
 //     this.collisionManager = new CollisionManager(this);

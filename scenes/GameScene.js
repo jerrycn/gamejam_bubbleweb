@@ -16,7 +16,7 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        console.log('GameScene create');
+       
         // 初始化碰撞管理器
         this.collisionManager = new CollisionManager(this);
 
@@ -36,61 +36,15 @@ class GameScene extends Phaser.Scene {
         // 初始化敌人数组
         this.enemies = [];
         
-        // 绑定 spawnLightEnemy 到场景实例
-        this.spawnLightEnemy = () => {
-            const spawnPoint = LightEnemy.getRandomSpawnPoint(this);
-            const enemy = new LightEnemy(this, spawnPoint.x, spawnPoint.y);
-            this.enemies.push(enemy);
-        };
-        
-        // 立即生成第一个闪电球
-        this.spawnLightEnemy();
-        
-        // 设置敌人生成定时器
-        this.time.addEvent({
-            delay: 20000,  // 20秒
-            callback: () => {
-                if (this.enemies.length < 5) {
-                    this.spawnLightEnemy();
-                }
-            },
-            callbackScope: this,
-            loop: true
-        });
+        //自动生成闪电球
+        //this.autoBuildLightEnemy();
 
-        // 添加Boss生成函数
-        this.spawnBossEnemy = () => {
-            const spawnPoint = BossEnemy.getRandomSpawnPoint(this);
-            const boss = new BossEnemy(this, spawnPoint.x, spawnPoint.y);
-            this.enemies.push(boss);
-            console.log('Boss生成于', spawnPoint.x, spawnPoint.y);
-        };
-        
-        // 立即生成一个Boss
-        //this.spawnBossEnemy();
 
-        // 在游戏进行一段时间后生成Boss
-        this.time.addEvent({
-            delay: 10000,  // 60秒后生成Boss
-            callback: this.spawnBossEnemy,
-            callbackScope: this
-        });
+        //自动生成小怪物
+        //this.autoBuildSmallMonsterEnemy();
 
-        // 添加小怪物生成函数
-        this.spawnSmallMonsterEnemy = () => {
-            const spawnPoint = SmallMonsterEnemy.getRandomSpawnPoint(this);
-            const monster = new SmallMonsterEnemy(this, spawnPoint.x, spawnPoint.y);
-            this.enemies.push(monster);
-            console.log('小怪物生成于', spawnPoint.x, spawnPoint.y);
-        };
-
-        // 设置小怪物生成定时器
-        this.time.addEvent({
-            delay: 5000,  // 15秒生成一次
-            callback: this.spawnSmallMonsterEnemy,
-            callbackScope: this,
-            loop: true
-        });
+       //自动生成Boss
+       this.autoBuildBossEnemy();
 
         // 清理所有泡泡
         this.clearAllBubbles = () => {
@@ -142,6 +96,74 @@ class GameScene extends Phaser.Scene {
         });
     }
 
+    //自动生成闪电球
+    autoBuildLightEnemy(){
+        // 绑定 spawnLightEnemy 到场景实例
+        this.spawnLightEnemy = () => {
+            const spawnPoint = Enemy.getRandomSpawnPoint(this);
+            const enemy = new LightEnemy(this, spawnPoint.x, spawnPoint.y);
+            this.enemies.push(enemy);
+        };
+        
+        // 立即生成第一个闪电球
+        this.spawnLightEnemy();
+        
+        // 设置闪电球成定时器
+        this.time.addEvent({
+            delay: 20000,  // 20秒
+            callback: () => {
+                if (this.enemies.length < 5) {
+                    this.spawnLightEnemy();
+                }
+            },
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    //自动生成小怪物
+    autoBuildSmallMonsterEnemy(){
+        // 添加小怪物生成函数
+        this.spawnSmallMonsterEnemy = () => {
+            const spawnPoint = Enemy.getRandomSpawnPoint(this);
+            const monster = new SmallMonsterEnemy(this, spawnPoint.x, spawnPoint.y);
+            this.enemies.push(monster);
+            console.log('小怪物生成于', spawnPoint.x, spawnPoint.y);
+        };
+
+        this.spawnSmallMonsterEnemy()
+
+        // 设置小怪物生成定时器
+        this.time.addEvent({
+            delay: 20000,  // 15秒生成一次
+            callback: this.spawnSmallMonsterEnemy,
+            callbackScope: this,
+            loop: false
+        });
+    }
+
+    //自动生成Boss
+    autoBuildBossEnemy(){
+        // 添加Boss生成函数
+        this.spawnBossEnemy = () => {
+            const spawnPoint = Enemy.getRandomSpawnPoint(this);
+            const boss = new BossEnemy(this, spawnPoint.x, spawnPoint.y);
+            this.enemies.push(boss);
+            console.log('Boss生成于', spawnPoint.x, spawnPoint.y);
+        };
+        
+        this.spawnBossEnemy()
+
+
+        // 在游戏进行一段时间后生成Boss
+        this.time.addEvent({
+            delay: 10000,  // 60秒后生成Boss
+            callback: this.spawnBossEnemy,
+            callbackScope: this
+        });
+    }
+    
+
     update() {
         // 更新猫咪，传入所有输入控制
         this.cat.update(
@@ -166,7 +188,7 @@ class GameScene extends Phaser.Scene {
     }
 
     calculateBubbleArea() {
-        console.log('----calculateBubbleArea----');
+        //console.log('----calculateBubbleArea----');
         let totalBubbleArea = 0;
         const sceneArea = this.game.config.width * this.game.config.height;
         
@@ -175,7 +197,7 @@ class GameScene extends Phaser.Scene {
             const radius = (bubble.sprite.displayWidth / 2) * bubble.sprite.scaleX;
             const area = Math.PI * radius * radius;
             totalBubbleArea += area;
-            console.log('Bubble radius:', radius, 'area:', area);
+            //console.log('Bubble radius:', radius, 'area:', area);
         });
         
 
@@ -184,18 +206,18 @@ class GameScene extends Phaser.Scene {
         const progress = (totalBubbleArea / targetArea) * 100;
         const clampedProgress = Math.min(progress, 100);
 
-        console.log('targetArea:', targetArea);
+        //console.log('targetArea:', targetArea);
 
-        console.log('Emitting progress update:', clampedProgress);
+        //console.log('Emitting progress update:', clampedProgress);
         this.events.emit('progressUpdate', clampedProgress);
 
         // 调试输出
         if (this._lastDebugTime === undefined || Date.now() - this._lastDebugTime > 1000) {
             this._lastDebugTime = Date.now();
             //console.log('Total bubble area:', totalBubbleArea);
-            console.log('Scene area:', sceneArea);
-            console.log('Target area:', targetArea);
-            console.log('Progress:', clampedProgress + '%');
+            //console.log('Scene area:', sceneArea);
+            //console.log('Target area:', targetArea);
+            //console.log('Progress:', clampedProgress + '%');
         }
     }
 
@@ -204,5 +226,11 @@ class GameScene extends Phaser.Scene {
         if (this.audioManager) {
             this.audioManager.stopMusic();
         }
+    }
+
+
+    //移除一个敌人
+    removeEnemy(enemy) {
+        this.enemies.splice(this.enemies.indexOf(enemy), 1);
     }
 } 
