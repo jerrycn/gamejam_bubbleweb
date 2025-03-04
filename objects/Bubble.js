@@ -133,7 +133,20 @@ class Bubble {
         this.blowingSound.destroy();
         this.blowingEndSound.destroy();
         
-        this.sprite.destroy();
+        if (this.lightBubble) {
+            this.lightBubble.destroy();
+            this.lightBubble = null;
+        }
+
+        if (this.sprite) {
+            this.scene.removeBubble(this);
+            this.sprite.destroy();
+        }
+    }
+
+    //设置光效泡泡
+    setLightBubble(lightBubble){
+        this.lightBubble = lightBubble;
     }
 
     // 检查是否与其他泡泡碰撞
@@ -191,5 +204,85 @@ class Bubble {
     // 修改 setPosition 方法，移除特效位置更新
     setPosition(x, y) {
         this.sprite.setPosition(x, y);
+    }
+
+    //爆炸
+    explosion(){
+        this.playDeadAnimation();
+
+        this.destroy();
+    }
+
+    // 播放死亡动画
+    playDeadAnimation() {
+        console.log('播放泡泡爆炸动画');
+        
+        // 检查是否已经创建了爆炸动画
+        if (!this.scene.anims.exists('bubble-explosion')) {
+            console.log('创建泡泡爆炸动画');
+            
+            // 创建爆炸动画帧序列
+            const frames = [];
+            
+            // 加载爆炸帧 (baozha0000.png 到 baozha0016.png)
+            for (let i = 0; i <= 16; i++) {
+                const frameNumber = i.toString().padStart(4, '0');
+                const key = `baozha${frameNumber}`;
+                
+                if (this.scene.textures.exists(key)) {
+                    frames.push({ key: key });
+                }
+            }
+            
+            // 记录找到的帧数
+            console.log(`找到 ${frames.length} 个泡泡爆炸动画帧`);
+            
+            // 确保有足够的帧创建动画
+            if (frames.length > 0) {
+                this.scene.anims.create({
+                    key: 'bubble-explosion',
+                    frames: frames,
+                    frameRate: 20,
+                    repeat: 0
+                });
+            } else {
+                console.error('没有可用的泡泡爆炸动画帧');
+            }
+        }
+        
+        // 创建一个新的精灵来显示爆炸效果
+        // 这样可以让泡泡消失的同时播放爆炸动画
+        const explosionSprite = this.scene.add.sprite(this.sprite.x, this.sprite.y, 'baozha0000');
+        explosionSprite.setScale(this.sprite.scale * 1.2); // 略大于泡泡
+        explosionSprite.setDepth(102);
+        
+        // 如果爆炸动画存在，播放它
+        if (this.scene.anims.exists('bubble-explosion')) {
+            // 添加爆炸特效
+            explosionSprite.play('bubble-explosion');
+            
+            // 动画播放完成后销毁
+            explosionSprite.once('animationcomplete', () => {
+                console.log('泡泡爆炸动画播放完成');
+                explosionSprite.destroy();
+            });
+        } else {
+            // 如果动画不存在，使用简单的缩放效果
+            console.warn('使用备用爆炸效果');
+            this.scene.tweens.add({
+                targets: explosionSprite,
+                alpha: 0,
+                scale: { from: this.sprite.scale * 1.5, to: this.sprite.scale * 0.2 },
+                duration: 300,
+                ease: 'Power2',
+                onComplete: () => {
+                    explosionSprite.destroy();
+                }
+            });
+        }
+        
+        // 让原泡泡立即消失
+        this.sprite.setVisible(false);
+        this.state = Bubble.State.HIDDEN;
     }
 } 

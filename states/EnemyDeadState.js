@@ -7,7 +7,7 @@ class EnemyDeadState extends EnemyState {
         this.enemy.playDeadAnimation();
         
         // 设置定时器在动画播放完后销毁敌人
-        this.enemy.scene.time.delayedCall(1000, () => {
+        this.enemy.scene.time.delayedCall(5000, () => {
             this.enemy.destroy();
         });
     }

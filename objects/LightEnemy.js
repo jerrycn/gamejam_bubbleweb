@@ -64,6 +64,7 @@ class LightEnemy extends Enemy {
         // 2. constructor.name
         if (bubble.constructor.name === 'Cat') {
             super.onCollision(bubble);
+            return;
         }
 
         if (!bubble || !bubble.sprite) return;
@@ -84,6 +85,14 @@ class LightEnemy extends Enemy {
 
         // 调用父类的计算方法
         super.calculateMoveVector();
+    }
+
+
+    // 销毁泡泡
+    destroy() {
+        if (this.sprite) {
+            super.destroy();
+        }
     }
 
 } 

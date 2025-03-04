@@ -95,30 +95,6 @@ class Enemy extends GameObject {
         console.log('Enemy onCollision', other);
     }
 
-    /*
-    // 检查是否与泡泡碰撞
-    checkBubbleCollision(bubbles) {
-        const enemyX = this.sprite.x;
-        const enemyY = this.sprite.y;
-        const enemyRadius = this.sprite.displayWidth / 4;
-
-        // 使用场景实例中的 bubbles
-        const sceneBubbles = this.scene.bubbles;
-        
-        for (const bubble of sceneBubbles) {
-            if (bubble.state === Bubble.State.FLOATING) {
-                const dx = enemyX - bubble.sprite.x;
-                const dy = enemyY - bubble.sprite.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < (bubble.getRadius() + enemyRadius)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }*/
-
     update() {
         // 更新状态机
         this.stateMachine.update();
@@ -134,8 +110,8 @@ class Enemy extends GameObject {
 
     destroy() {
         if (this.sprite) {
-            this.sprite.destroy();
             this.scene.removeEnemy(this);
+            this.sprite.destroy();
         }
     }
 

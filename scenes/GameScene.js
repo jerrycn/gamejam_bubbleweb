@@ -28,7 +28,6 @@ class GameScene extends Phaser.Scene {
 
         // 初始化泡泡数组
         this.bubbles = [];
-        this.lightBubbles = [];
 
         // 创建猫咪实例
         this.cat = new Cat(this, 960, 540);
@@ -37,11 +36,11 @@ class GameScene extends Phaser.Scene {
         this.enemies = [];
         
         //自动生成闪电球
-        //this.autoBuildLightEnemy();
+        this.autoBuildLightEnemy();
 
 
         //自动生成小怪物
-        //this.autoBuildSmallMonsterEnemy();
+        this.autoBuildSmallMonsterEnemy();
 
        //自动生成Boss
        this.autoBuildBossEnemy();
@@ -110,7 +109,7 @@ class GameScene extends Phaser.Scene {
         
         // 设置闪电球成定时器
         this.time.addEvent({
-            delay: 20000,  // 20秒
+            delay: 5000,  // 20秒
             callback: () => {
                 if (this.enemies.length < 5) {
                     this.spawnLightEnemy();
@@ -131,11 +130,11 @@ class GameScene extends Phaser.Scene {
             console.log('小怪物生成于', spawnPoint.x, spawnPoint.y);
         };
 
-        this.spawnSmallMonsterEnemy()
+        //this.spawnSmallMonsterEnemy()
 
         // 设置小怪物生成定时器
         this.time.addEvent({
-            delay: 20000,  // 15秒生成一次
+            delay: 10000,  // 15秒生成一次
             callback: this.spawnSmallMonsterEnemy,
             callbackScope: this,
             loop: false
@@ -150,16 +149,19 @@ class GameScene extends Phaser.Scene {
             const boss = new BossEnemy(this, spawnPoint.x, spawnPoint.y);
             this.enemies.push(boss);
             console.log('Boss生成于', spawnPoint.x, spawnPoint.y);
+
+            console.log('this.enemies.length', this.enemies.length);
         };
         
-        this.spawnBossEnemy()
+        //this.spawnBossEnemy()
 
 
         // 在游戏进行一段时间后生成Boss
         this.time.addEvent({
-            delay: 10000,  // 60秒后生成Boss
+            delay: 20000,  // 60秒后生成Boss
             callback: this.spawnBossEnemy,
-            callbackScope: this
+            callbackScope: this,
+            loop: true
         });
     }
     
@@ -231,6 +233,20 @@ class GameScene extends Phaser.Scene {
 
     //移除一个敌人
     removeEnemy(enemy) {
-        this.enemies.splice(this.enemies.indexOf(enemy), 1);
+        const index = this.enemies.indexOf(enemy);
+        if (index !== -1) {
+            console.log("移除敌人, enemy", enemy);
+            console.log('当前敌人数量:', this.enemies.length);
+            this.enemies.splice(index, 1);
+            console.log('移除后敌人数量:', this.enemies.length);
+        } else {
+            console.warn('试图移除不存在的敌人:', enemy);
+        }
+    }
+
+    //移除一个泡泡
+    removeBubble(bubble) {
+        this.bubbles.splice(this.bubbles.indexOf(bubble), 1);
+        console.log("移除泡泡移, bubble", bubble,this.bubbles.length);
     }
 } 

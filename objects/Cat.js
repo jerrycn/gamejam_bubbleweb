@@ -44,7 +44,6 @@ class Cat extends GameObject {
         // 初始化泡泡相关属性
         this.currentBubble = null;
         this.bubbles = this.scene.bubbles;  
-        this.lightBubbles = this.scene.lightBubbles;  // 引用全局光效泡泡数组
 
         // 初始化属性
         this.isInvincible = false;
@@ -149,10 +148,6 @@ class Cat extends GameObject {
         if (this.bubbles.length >= Cat.MAX_BUBBLES) {  // 使用类的静态常量
             const oldBubble = this.bubbles.shift();
             oldBubble.destroy();
-            if (this.lightBubbles.length > 0) {
-                const oldLight = this.lightBubbles.shift();
-                oldLight.destroy();
-            }
         }
         
         this.bubbles.push(this.currentBubble);
@@ -171,13 +166,8 @@ class Cat extends GameObject {
             const lightBubble = new LightBubble(this.scene, x, y, radius);
             lightBubble.setVisible(true);
             lightBubble.setDepth(1);
+            this.currentBubble.setLightBubble(lightBubble);
             
-            // 如果超过最大数量，确保光效泡泡数量与普通泡泡一致
-            if (this.lightBubbles.length >= Cat.MAX_BUBBLES) {  // 使用类的静态常量
-                const oldLight = this.lightBubbles.shift();
-                oldLight.destroy();
-            }
-            this.lightBubbles.push(lightBubble);
             
             this.currentBubble = null;
         }

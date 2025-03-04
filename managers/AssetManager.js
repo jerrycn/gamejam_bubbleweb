@@ -73,5 +73,23 @@ class AssetManager {
                 console.error(`加载失败: ${key} (${path})`);
             });
         }
+
+        // 加载Boss死亡动画帧
+        for (let i = 0; i <= 13; i++) {
+            const frameNumber = i.toString().padStart(2, '0');
+            scene.load.image(`boss_zibao00_${frameNumber}`, `assets/enemy/boss/boss_zibao00_${frameNumber}.png`);
+        }
+
+        // 加载Boss爆炸动画附加帧 (zibao00100.png 到 zibao00117.png)
+        for (let i = 100; i <= 117; i++) {
+            const frameNumber = i.toString();
+            scene.load.image(`zibao${frameNumber}`, `assets/enemy/zibao00${frameNumber}.png`);
+        }
+
+        // 加载泡泡爆炸动画帧
+        for (let i = 0; i <= 16; i++) {
+            const frameNumber = i.toString().padStart(4, '0');
+            scene.load.image(`baozha${frameNumber}`, `assets/bubble/baozha${frameNumber}.png`);
+        }
     }
 } 
